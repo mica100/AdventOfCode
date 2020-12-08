@@ -2,6 +2,7 @@ package adventofcode.y2020
 
 import adventofcode.readInput
 
+
 data class Rule(private val parsedName: String) {
     val subRules = mutableMapOf<String, Int>()
     val name: String = parsedName.replace("bags","bag").strip()
@@ -84,7 +85,7 @@ fun main() {
     readInput(7, 2020).forEach { parseRule(it) }
 
     var count = 0
-    for ((name, rule) in Rule.ruleList) {
+    for ((_, rule) in Rule.ruleList) {
         if (rule.canCarry("shiny gold bag")) count++
     }
 
