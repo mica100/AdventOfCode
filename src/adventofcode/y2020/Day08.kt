@@ -2,125 +2,74 @@ package adventofcode.y2020
 
 import adventofcode.readInput
 
-class CPU() {
+class CPU {
     var ip = 0
     var acc = 0
     var exitCode = -1
     var finished = false
-    var program: List<Instruction>? = null
-
-    fun reset() {
-        ip = 0
-        acc = 0
-        exitCode = -1
-        finished = false
-    }
-
-    init {
-        reset()
-    }
-
-    companion object {
-        private val cpu = CPU()
-
-        fun getCPU(): CPU = cpu
-    }
-
 }
 
-abstract class Operation(open val line: Int) {
-    abstract fun execute(cpu: CPU): Boolean
-    abstract fun toCode(): String
+enum class OpCodes {
+    nop, jmp, acc, exit, invalid
+}
+fun getOpCode(input: String): OpCodes {
+    val op = when (input) {
+        "nop" -> OpCodes.nop
+        "jmp" -> OpCodes.jmp
+        "acc" -> OpCodes.acc
+        "exit" -> OpCodes.exit
+        else -> OpCodes.invalid
+    }
+    assert(op != OpCodes.invalid)
+    return op
 }
 
-class OperationNop(override val line: Int, val arg: Int): Operation(line) {
-    override fun execute(cpu: CPU): Boolean {
-        cpu.ip++
-        return true
-    }
-    override fun toCode(): String {
-        return "nop $arg"
-    }
-}
-
-
-class OperationExit(override val line: Int, val arg: Int): Operation(line) {
-    override fun execute(cpu: CPU): Boolean {
-        cpu.exitCode = arg
-        cpu.finished = true
-        return true
-    }
-
-    override fun toCode(): String {
-        return "exit $arg"
-    }
-}
-
-class OperationAcc(override val line: Int, val arg: Int): Operation(line) {
-    override fun execute(cpu: CPU): Boolean {
-        cpu.acc += arg
-        cpu.ip++
-        return true
-    }
-    override fun toCode(): String {
-        return "acc $arg"
-    }
-}
-
-class OperationJmp(override val line: Int, val arg: Int): Operation(line) {
-    override fun execute(cpu: CPU): Boolean {
-        cpu.ip += arg
-        return true
-    }
-    override fun toCode(): String {
-        return "jmp $arg"
-    }
-}
-
-class Instruction(codeLine: String, private val line: Int) {
+class Instruction(codeLine: String, val line: Int) {
     var executeCounter = 0
-    var operation: Operation = OperationNop(line, 0)
+    var opcode = OpCodes.nop
+    var arg: Int = 0
 
     init {
-        val (opcode, arg) = codeLine.split(" ")
-        val argInt = arg.toInt()
-
-        operation = when (opcode) {
-            "nop" -> OperationNop(line, argInt)
-            "acc" -> OperationAcc(line, argInt)
-            "jmp" -> OperationJmp(line, argInt)
-            "exit" -> OperationExit(line, argInt)
-            else -> operation // no change
-        }
+        val (strOpcode, strArg) = codeLine.split(" ")
+        arg = strArg.toInt()
+        opcode = getOpCode(strOpcode)
     }
 
-    fun switchOp() {
-        val op = operation
-        if (op is OperationNop) {
-            operation = OperationJmp(op.line, op.arg)
+    override fun toString(): String = "$line: ${opcode.name} $arg"
+
+    fun switchOp(): Boolean {
+        val op = opcode
+        opcode = when (op) {
+            OpCodes.nop -> OpCodes.jmp
+            OpCodes.jmp -> OpCodes.nop
+            else -> return false
         }
-        else if (op is OperationJmp) {
-            operation = OperationNop(op.line, op.arg)
-        }
+        return true
     }
 
     fun execute(cpu: CPU, showDebug: Boolean): Boolean {
         if (showDebug) {
-            println("acc=${cpu.acc}, ip=${cpu.ip}, exec ${line}, op=${operation.toCode()}")
+            println("acc=${cpu.acc}, ip=${cpu.ip}, exec ${line}, op=${opcode.name} $arg")
         }
 
         if (executeCounter==0) {
-            if(! operation.execute(cpu)) return false
+            when (opcode) {
+                OpCodes.nop -> cpu.ip++
+                OpCodes.jmp -> cpu.ip += arg
+                OpCodes.acc -> { cpu.ip++; cpu.acc += arg }
+                OpCodes.exit -> { cpu.exitCode = arg; cpu.finished = true }
+                OpCodes.invalid -> { cpu.exitCode = 255; cpu.finished = true }
+            }
         }
         executeCounter++
-        return (executeCounter == 1)
+        return (executeCounter == 1 || cpu.finished)
     }
 }
 
-class Code(private val linesOfCode: List<String>) {
+class Code(linesOfCode: List<String>) {
     private var code = arrayOf<Instruction>()
-    var lastInstruction: Instruction? = null
-    var switchInstruction: Instruction? = null
+    private var lastInstruction: Instruction? = null
+    private var switchInstruction: Instruction? = null
 
     init {
         val codeList = mutableListOf<Instruction>()
@@ -142,60 +91,50 @@ class Code(private val linesOfCode: List<String>) {
         return cpu.exitCode
     }
 
-    fun searchProblem(cpu: CPU): Boolean {
+    fun findProblem(): Boolean {
         for (idx in code.indices) {
             if (!switchInstruction(idx)) continue
 
             println("try on idx $idx")
+            val cpu = CPU()
+            reset()
             run(cpu)
-            if (lastInstruction?.operation is OperationExit) {
+            if (lastInstruction?.opcode == OpCodes.exit) {
                 println("found solution idx $idx")
-                println("acc ${cpu.acc}, code size ${code.size}, line ${lastLine}")
+                println("acc ${cpu.acc}, code size ${code.size}, line ${getLastLine()}")
                 return true
             } else {
-                println("failed at ip ${cpu.ip}")
+                println("failed at ip ${cpu.ip}, op ${getLastLine()}")
             }
-            reset(cpu)
         }
         return false
     }
 
-    fun switchInstruction(line: Int): Boolean {
+    private fun switchInstruction(line: Int): Boolean {
         val newInstruction = code[line]
-        if (newInstruction.operation is OperationJmp || newInstruction.operation is OperationNop) {
-            switchInstruction?.switchOp()
-            newInstruction.switchOp()
+        if (newInstruction.switchOp()) {
+            switchInstruction?.switchOp() // switch back again
             switchInstruction = newInstruction
             return true
         }
         return false
     }
 
-    fun reset(cpu: CPU) {
-        cpu.reset()
-        for (instr in code) {
-            instr.executeCounter = 0
-        }
+    fun reset() {
+        code.forEach { it.executeCounter = 0 }
         lastInstruction = null
     }
 
-    val lastLine: Int
-        get() {
-            val lastI = lastInstruction
-            if (lastI!=null) return lastI.operation.line
-            return -1
-        }
+    fun getLastLine(): String = lastInstruction?.toString() ?: "invalid lastInstruction"
 }
 
 fun main() {
     val code = Code(readInput(8, 2020))
 
-    val cpu = CPU.getCPU()
+    val cpu = CPU()
     val exitCode = code.run(cpu)
-    val lastLine = code.lastLine
+    println("acc: ${cpu.acc}, ip: ${cpu.ip}, lastLine: ${code.getLastLine()}, exitCode: $exitCode")
 
-    println("acc: ${cpu.acc}, ip: ${cpu.ip}, lastLine: $lastLine, exitCode: $exitCode")
-
-    code.reset(cpu)
-    code.searchProblem(cpu)
+    code.reset()
+    code.findProblem()
 }
