@@ -7,9 +7,6 @@ class Buffer(private val data: LongArray, private val checkLength: Int) {
         val sum = data[idx]
         for (i in idx-checkLength until idx) {
             for (j in i+1 until idx) {
-                if (idx == 90) {
-                    //println("$idx ${data[i]}($i) + ${data[j]}($j) == ${data[i] + data[j]} != $sum")
-                }
                 if (data[i] != data[j] && data[i] + data[j] == sum) {
                     //println("$idx ${data[i]}($i) + ${data[j]}($j) == ${data[i] + data[j]} == $sum")
                     return true
@@ -48,9 +45,7 @@ fun main() {
             println("$idx ${data[idx]} failed")
             failedOn = data[idx]
             break
-        } else {
-            //println("$idx ${data[idx]} ok")
-        }
+        } //else println("$idx ${data[idx]} ok")
     }
 
     // find a continuous region that sum up to this "failedOn"
