@@ -7,8 +7,6 @@ data class Point(val x: Int, val y: Int) {
     fun down(): Point = copy(y = y+1)
     fun left(): Point = copy(x = x-1)
     fun right(): Point = copy(x = x+1)
-
-    fun clone(): Point = Point(this.x, this.y)
 }
 
 //fun Char.operationFun(): (Point) -> Point = when(this) {
@@ -41,7 +39,8 @@ fun main() {
     var idx = 0
     for (c in inputStr[0]) {
         val point = if (idx % 2 == 0) p1 else p2
-        val point_new = when(c) {
+        var point_new = point
+        point_new = when(c) {
             '^' -> point.up()
             'v' -> point.down()
             '>' -> point.right()

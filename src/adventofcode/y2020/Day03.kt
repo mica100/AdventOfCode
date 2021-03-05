@@ -3,12 +3,12 @@ package adventofcode.y2020
 import adventofcode.readInput
 
 data class Row (val data:String) {
-    object Companion {
-        val rows = mutableListOf<Row>()
+    companion object {
+        val ROWS = mutableListOf<Row>()
 
         fun create(input: String): Row {
             val row = Row(input)
-            rows += row
+            ROWS += row
             return row
         }
     }
@@ -21,13 +21,17 @@ data class Row (val data:String) {
     }
 }
 
+//fun createRow(input: String): Row {
+//    return Row(input)
+//}
+
 fun runDown(right: Int, down: Int): Int {
     var col = 0
     var row = 0
     var count = 0
 
-    while (row < Row.Companion.rows.size) {
-        val r = Row.Companion.rows[row]
+    while (row < Row.ROWS.size) {
+        val r = Row.ROWS[row]
         if (r.hasTree(col)) {
             count++
         }
@@ -41,7 +45,12 @@ fun runDown(right: Int, down: Int): Int {
 fun main() {
     val inputStrList = readInput(3, 2020)
 
-    inputStrList.map { Row.Companion.create(it) }
+    inputStrList.forEach { Row.create(it) }
+
+    //val rowList = mutableListOf<Row>()
+    //inputStrList.forEach { rowList.add(createRow(it)) }
+    //val rowList = inputStrList.map { createRow(it) }
+
 
     val a = runDown(1, 1)
     val b = runDown(3, 1)
@@ -49,7 +58,6 @@ fun main() {
     val d = runDown(7, 1)
     val e = runDown(1,2)
 
-    println("answer: count=$b")
-    val prod: Long = a.toLong()*b*c*d*e
+    val prod: Long = 1L*a*b*c*d*e
     println("answer2: a=$a, b=$b, c=$c, d=$d, e=$d, product=$prod")
 }
