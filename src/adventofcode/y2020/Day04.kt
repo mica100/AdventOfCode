@@ -86,7 +86,7 @@ class Passport() {
 
     fun setValue(input: String) {
         //println("Input: $input")
-        val in1 = input.strip()
+        val in1 = input.trim()
         if (in1.contains(":")) {
             val (key, value) = in1.split(":")
             setValue(key, value)

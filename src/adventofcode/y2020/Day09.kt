@@ -24,8 +24,8 @@ class Buffer(private val data: LongArray, private val checkLength: Int) {
                 sum+=data[j++]
             }
             if (sum == targetSum) {
-                val min = data.slice(i..j).min()
-                val max = data.slice(i..j).max()
+                val min = data.slice(i..j).minOrNull()
+                val max = data.slice(i..j).maxOrNull()
                 return Pair(min, max)
             }
         }

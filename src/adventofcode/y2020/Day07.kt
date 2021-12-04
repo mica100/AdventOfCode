@@ -5,7 +5,7 @@ import adventofcode.readInput
 
 data class Rule(private val parsedName: String) {
     val subRules = mutableMapOf<String, Int>()
-    val name: String = parsedName.replace("bags","bag").strip()
+    val name: String = parsedName.replace("bags","bag").trim()
 
     init {
         assert(! ruleList.containsKey(name))
@@ -58,10 +58,10 @@ data class Rule(private val parsedName: String) {
 }
 
 fun parseSubRule(input: String): Pair<String, Int>? {
-    if (input.isEmpty() || input.isBlank() || input.strip() == "no other bag") return null
+    if (input.isEmpty() || input.isBlank() || input.trim() == "no other bag") return null
 
     val re = Regex("( *[0-9]+) (.*)")
-    val num = input.replace(re,"$1").strip().toInt()
+    val num = input.replace(re,"$1").trim().toInt()
     val name = input.replace(re,"$2")
 
     return Pair(name, num)

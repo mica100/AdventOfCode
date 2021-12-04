@@ -18,7 +18,7 @@ fun main() {
 
 class Cups(var cups: MutableList<Int>) {
     var currentIdx = 0
-    val maxLabel = cups.max()!!
+    private val maxLabel = cups.maxOrNull() ?: 0
 
     fun play(rounds: Int) {
         for (i in 1..rounds) {

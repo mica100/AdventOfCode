@@ -23,7 +23,7 @@ fun findWays(voltageList: List<Int>) {
 fun main() {
     val voltageList = readInput(10, 2020).map { it.toInt() }.toMutableList()
 
-    val deviceVoltage = 3 + (voltageList.max() ?: 0)
+    val deviceVoltage = 3 + (voltageList.maxOrNull() ?: 0)
 
     voltageList.add(0)
     voltageList.add(deviceVoltage)
