@@ -36,7 +36,7 @@ class Schedule() {
 
         val minBus = deptMap.minByOrNull { it -> it.value }
 
-        println("bus ${minBus?.key} arrives after ${minBus?.value}min waiting time. ${minBus?.key!! *minBus?.value}")
+        println("bus ${minBus?.key} arrives after ${minBus?.value}min waiting time. ${minBus?.key!! * minBus.value}")
     }
 }
 
