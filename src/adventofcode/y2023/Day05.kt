@@ -1,5 +1,11 @@
 package adventofcode.y2023
 
+import io.kotest.common.runBlocking
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+
 data class CalcMap(val name: String, val from: String, val to: String) {
     val calc = mutableListOf<ConversionMap>()
 
@@ -60,20 +66,26 @@ class CalcMaps(val maps: MutableMap<String, CalcMap>) {
     }
 
     fun getMinOfSeedRanges(seedRanges: List<Long>): Pair<Long,Long> {
-        var minValue = Long.MAX_VALUE
-        var input = Long.MAX_VALUE
         val steps = getConversionSteps()
         val stepsAsList = stepsAsMapList(steps)
-        seedRanges.chunked(2) { (start, length) ->
-            for (i in start until start + length) {
-                val a = convert(i, stepsAsList)
-                if (a < minValue) {
-                    minValue = a
-                    input = i
+        return runBlocking (Dispatchers.Default) {
+            val all = seedRanges.chunked(2) { (start, length) ->
+                async {
+                    var minValue = Long.MAX_VALUE
+                    var input = Long.MAX_VALUE
+                    for (i in start until start + length) {
+                        val a = convert(i, stepsAsList)
+                        if (a < minValue) {
+                            minValue = a
+                            input = i
+                        }
+                    }
+                    println("finished $start: $input -> $minValue")
+                    input to minValue
                 }
-            }
+            }.awaitAll()
+            all.minByOrNull { it.second }!!
         }
-        return input to minValue
     }
 
 }

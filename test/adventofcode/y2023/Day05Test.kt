@@ -104,6 +104,6 @@ class Day05Test {
     fun testSolution2() {
         val subject = Day05(readInput(5, 2023))
         assertEquals(Pair(3881100901L, 136096660L), subject.calcMaps.getMinOfSeedRanges(subject.seeds))
-        // runs 14min08sec
+        // runs 14min08sec, parallelized 3min54sec
     }
 }
