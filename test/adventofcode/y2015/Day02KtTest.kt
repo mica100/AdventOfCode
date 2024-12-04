@@ -1,7 +1,7 @@
 package adventofcode.y2015
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import kotlin.test.assertEquals
 
 internal class Day02KtTest {
     @Test

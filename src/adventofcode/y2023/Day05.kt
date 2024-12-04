@@ -1,6 +1,5 @@
 package adventofcode.y2023
 
-import io.kotest.common.runBlocking
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
